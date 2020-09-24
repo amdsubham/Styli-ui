@@ -138,7 +138,7 @@ function SearchPanel(props) {
           "low_hip_to": low_hip[1],
         });
         console.log(data);
-        let response = await StyliAuth.get("/filtermodels", data);
+        let response = await StyliAuth.get("/filtermodels");
         
         props.onSubmitChild(response.data);
       } catch (err) {
