@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import Dropzone from "react-dropzone";
 import "./styles.css";
 import {
@@ -12,6 +11,7 @@ import {
   Button,
 } from "@material-ui/core";
 import { StyliAuth } from "../../apis/StyliAuth";
+import FirebaseConfig from "../../apis/FirebaseConfig";
 
 const ColorButton = withStyles((theme) => ({
   root: {
@@ -55,7 +55,8 @@ function ModelForm(props) {
     },
   ];
 
-  const [photo, setFileNames] = useState([]);
+  const [file, setfileName] = useState("");
+  const [photo, setphotoUrl] = useState("");
   const [name, setmodelNames] = useState("");
   const [wear, setwearNames] = useState("SUBHAM");
   const [height, setheightNames] = useState("");
@@ -64,13 +65,37 @@ function ModelForm(props) {
   const [high_hip, sethighhipsNames] = useState("");
   const [low_hip, setlowhipsNames] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
-  const handleDrop = (acceptedFiles) =>
-    setFileNames(
-      acceptedFiles.map((file) => {
-        console.log(file);
-        return file.name;
-      })
+  const handleDrop = (acceptedFiles) => {
+    setfileName(acceptedFiles[0].name)
+    uploadImage(acceptedFiles);
+  };
+  const uploadImage = async (File) => {
+    const uploadTask = FirebaseConfig.storage()
+      .ref(`images/${File[0].name}`)
+      .put(File[0]);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // progress function ...
+        // const progress = Math.round(
+        //   (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        // );
+      },
+      (error) => {
+        console.log(error);
+      },
+      () => {
+        FirebaseConfig.storage()
+          .ref("images")
+          .child(File[0].name)
+          .getDownloadURL()
+          .then((url) => {
+            console.log(url);
+            setphotoUrl(url);
+          });
+      }
     );
+  };
 
   const handelChange = (e) => {
     switch (e.target.name) {
@@ -103,16 +128,7 @@ function ModelForm(props) {
   };
 
   const submitData = async () => {
-    if (
-      name &&
-      wear &&
-      height &&
-      brust &&
-      waist &&
-      high_hip &&
-      low_hip &&
-      photo
-    ) {
+    if (name && wear && height && brust && waist && high_hip && low_hip) {
       try {
         let data = JSON.stringify({
           name,
@@ -124,7 +140,6 @@ function ModelForm(props) {
           low_hip,
           photo,
         });
-        console.log(data);
         let response = await StyliAuth.post("/addmodel", data);
 
         setSubmitMessage("Model is Succesfully Added");
@@ -161,18 +176,10 @@ function ModelForm(props) {
                   {({ getRootProps, getInputProps }) => (
                     <div {...getRootProps({ className: "dropzone" })}>
                       <input {...getInputProps()} />
-                      <p>Drag'n'drop images, or click to select files</p>
+                      {file?<h3>{file}</h3>:<p>Drag'n'drop images, or click to select files</p>}
                     </div>
                   )}
                 </Dropzone>
-                <div>
-                  <strong>Selected Files:</strong>
-                  <ul>
-                    {photo.map((fileName) => (
-                      <li key={fileName}>{fileName}</li>
-                    ))}
-                  </ul>
-                </div>
               </Grid>
             </Grid>
             <Grid container item spacing={1}>

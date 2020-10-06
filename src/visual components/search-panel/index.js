@@ -52,7 +52,7 @@ function SearchPanel(props) {
   const { classes } = props;
   const [keywords, showkeywords] = useState(false);
   const [name, setmodelNames] = useState(" ");
-  const [wear, setwearNames] = useState("M");
+  const [wear, setwearNames] = useState("");
   const [height, setheightNames] = useState([0, 10]);
   const [brust, setbrustNames] = useState([0, 10]);
   const [waist, setwaistNames] = useState([0, 10]);
@@ -115,13 +115,9 @@ function SearchPanel(props) {
       </Grid>
     );
   }
-
-
-
-
   const submitData = async () => {
     showkeywords(true)
-    if (name && wear && height && brust && waist && high_hip && low_hip) {
+    if (name || wear || height || brust || waist || high_hip || low_hip) {
       try {
         let data = JSON.stringify({
           "name": name,
@@ -137,7 +133,6 @@ function SearchPanel(props) {
           "low_hip_from": low_hip[0],
           "low_hip_to": low_hip[1],
         });
-        console.log(data);
         let response = await StyliAuth.post("/filtermodels", data);
         
         props.onSubmitChild(response.data);
@@ -359,7 +354,6 @@ function SearchPanel(props) {
             <Grid xs={12}>
               <Divider />
             </Grid>
-            {console.log(keywords)}
             {keywords?displayKeywords():null}
           </Grid>
         </Paper>
